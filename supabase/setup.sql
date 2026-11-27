@@ -50,7 +50,9 @@ as $$
 declare device_code text := replace(gen_random_uuid()::text, '-', '');
 begin
   perform public.happy_pay_admin();
-  update happy_pay_private.playlist set device_hash = sha256(convert_to(device_code, 'UTF8'));
+  update happy_pay_private.playlist
+    set device_hash = sha256(convert_to(device_code, 'UTF8'))
+    where singleton = true;
   return device_code;
 end;
 $$;
