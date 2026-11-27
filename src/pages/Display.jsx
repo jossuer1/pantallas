@@ -24,8 +24,9 @@ function ReportFrame({report, active, online, reconnect}) {
   return <EmbedFrame key={reconnect + ':' + revision} url={report.url} title={report.name} active={active}/>
 }
 
-export default function Display() {
-  const [config, setConfig] = useState(readConfig)
+export default function Display({cloudConfig, syncMessage}) {
+  const [localConfig, setConfig] = useState(readConfig)
+  const config = cloudConfig || localConfig
   const active = useMemo(() => config.reports.filter(report => report.active), [config])
   const {current, move, online, reconnect} = usePlayback(active)
   const [visited, setVisited] = useState([])
@@ -64,6 +65,6 @@ export default function Display() {
     {active.filter(report => report.id === currentId || visited.indexOf(report.id) >= 0).map(report =>
       <ReportFrame key={report.id + ':' + report.url} report={report} active={report.id === currentId} online={online} reconnect={reconnect}/>)}
     {!current && <div className="tv-message">{config.error || 'No hay informes activos. Configúralos desde el panel principal.'}</div>}
-    {!online && <div className="tv-notice" role="status">Sin conexión. Esperando a que vuelva la red.</div>}
+    {(!online || syncMessage) && <div className="tv-notice" role="status">{syncMessage || 'Sin conexión. Esperando a que vuelva la red.'}</div>}
   </main>
 }

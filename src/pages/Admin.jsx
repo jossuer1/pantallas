@@ -9,14 +9,15 @@ const icons = {powerbi: BarChart3, excel: FileSpreadsheet, web: Globe2}
 const iconButton = (label, Icon, handler, disabled = false) =>
   <button type="button" className="icon" title={label} aria-label={label} onClick={handler} disabled={disabled}><Icon size={17}/></button>
 
-export default function Admin() {
+export default function Admin({cloud, extra}) {
   const [initial] = useState(readConfig)
-  const [reports, setReports] = useState(initial.reports)
+  const [reports, setReports] = useState(cloud ? cloud.reports : initial.reports)
+  const writing = useRef(false)
   const [draft, setDraft] = useState(emptyReport)
   const [editing, setEditing] = useState(null)
   const [preview, setPreview] = useState(null)
-  const [message, setMessage] = useState(initial.error)
-  const [error, setError] = useState(Boolean(initial.error))
+  const [message, setMessage] = useState(cloud ? '' : initial.error)
+  const [error, setError] = useState(!cloud && Boolean(initial.error))
   const [pasteOpen, setPasteOpen] = useState(false)
   const [json, setJson] = useState('')
   const input = useRef(null)
@@ -30,29 +31,34 @@ export default function Admin() {
     setMessage(value)
     setError(failed)
   }
-  function commit(value, notice = 'Configuración guardada en este navegador.') {
+  async function commit(value, notice) {
+    if (writing.current) return false
+    writing.current = true
     try {
-      saveConfig(value)
+      if (cloud) await cloud.save(value)
+      else saveConfig(value)
       setReports(value)
-      notify(notice)
+      notify(notice || (cloud ? 'Configuración sincronizada.' : 'Configuración guardada en este navegador.'))
       return true
-    } catch {
-      notify('No se pudo guardar. Comprueba que el navegador permita almacenamiento local.', true)
+    } catch (error) {
+      notify(cloud ? error.message : 'No se pudo guardar. Comprueba que el navegador permita almacenamiento local.', true)
       return false
+    } finally {
+      writing.current = false
     }
   }
   function cancel() {
     setEditing(null)
     setDraft(emptyReport)
   }
-  function save(event) {
+  async function save(event) {
     event.preventDefault()
     try {
       const report = normalizeReport(draft)
       const next = editing
         ? reports.map(item => item.id === editing ? {...report, id: editing} : item)
         : reports.concat({...report, id: Date.now().toString(36) + Math.random().toString(36).slice(2)})
-      if (commit(next)) cancel()
+      if (await commit(next)) cancel()
     } catch (exception) { notify(exception.message, true) }
   }
   function move(index, direction) {
@@ -61,11 +67,11 @@ export default function Admin() {
     ;[next[index], next[target]] = [next[target], next[index]]
     commit(next)
   }
-  function importJson(value) {
+  async function importJson(value) {
     try {
       const imported = parseConfig(value)
       if (reports.length && !window.confirm('¿Reemplazar la configuración actual por el JSON importado?')) return
-      if (commit(imported, 'Configuración importada y guardada.')) {
+      if (await commit(imported, 'Configuración importada y guardada.')) {
         cancel()
         setPasteOpen(false)
         setJson('')
@@ -98,6 +104,7 @@ export default function Admin() {
       <a className="button primary" href="/display"><Play size={17}/> Modo televisión</a>
     </div></header>
     <main className="shell">
+      {extra}
       <div className="intro"><div><h1>Panel de control</h1><p className="muted">Organiza lo que se reproduce en tus pantallas.</p></div>
         <div className="actions"><button onClick={exportFile}><Download size={17}/> Exportar JSON</button><button onClick={() => setPasteOpen(!pasteOpen)} aria-expanded={pasteOpen}><Upload size={17}/> Importar JSON</button></div>
       </div>
@@ -127,8 +134,8 @@ export default function Admin() {
                   setDraft(report)
                   document.getElementById('editor').scrollIntoView()
                 })}
-                {iconButton('Eliminar', Trash2, () => {
-                  if (window.confirm('¿Eliminar «' + report.name + '»?') && commit(reports.filter(item => item.id !== report.id)) && editing === report.id) cancel()
+                {iconButton('Eliminar', Trash2, async () => {
+                  if (window.confirm('¿Eliminar «' + report.name + '»?') && await commit(reports.filter(item => item.id !== report.id)) && editing === report.id) cancel()
                 })}
               </div>
             </article>

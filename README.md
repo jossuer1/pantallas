@@ -23,7 +23,22 @@ Abre la URL que imprime Vite. El panel está en `/` y el reproductor en `/displa
 3. En el panel, indica nombre, tipo, URL y duración. Configura la recarga periódica en segundos o usa 0 para desactivarla. Pulsa **Vista previa** y comprueba visualmente el contenido. Pulsa **Guardar** para registrar el informe, luego ajusta el orden y el estado en la lista.
 4. Para páginas web, usa direcciones HTTPS de sitios que permitan su inserción. Usa únicamente direcciones que correspondan al contenido que tu empresa autoriza mostrar. Exporta el JSON solo a destinos autorizados, pues incluye nombres y enlaces internos. Usa enlaces de inserción que no incluyan credenciales, tokens o firmas.
 
-## Netlify
+## Despliegue
+
+### Sincronización con Supabase en Render
+
+1. Si ya tienes una lista local, expórtala desde el panel antes de habilitar Supabase.
+2. Crea un proyecto en Supabase. Abre **SQL Editor** y ejecuta el contenido de `supabase/setup.sql`.
+3. En **Authentication → Users**, crea el usuario administrador con correo y contraseña. Ejecuta la última consulta del archivo SQL por separado, sustituyendo `TU_CORREO` por ese correo. Para confirmar que el usuario quedó autorizado, comprueba que la consulta insertó una fila en `happy_pay_private.admins`.
+4. En **Environment** del sitio estático de Render, agrega `VITE_SUPABASE_URL` con la URL HTTPS del proyecto y `VITE_SUPABASE_PUBLISHABLE_KEY` con la clave **Publishable**. Vite incluye estas dos variables en la compilación del navegador. Usa exclusivamente el tipo de clave Publishable. Guarda y vuelve a compilar y desplegar el sitio. Mantén la regla **Rewrite** de `/*` a `/index.html`.
+5. Abre el panel publicado, inicia sesión e importa el JSON si ya tenías informes. En **Vincular pantalla**, genera el código. Abre la URL del sitio con `/display` en la LG e introdúcelo una vez.
+6. Modifica la duración de un informe desde el panel y comprueba que la TV reciba la actualización. La consulta se repite cada 15 segundos. Cierra y vuelve a abrir el navegador de la LG para comprobar que conserva la vinculación.
+
+El código de pantalla permite leer la lista compartida y se conserva hasta un año en una cookie HTTPS de la LG limitada a `/display`. Guárdalo como dato privado. Generar otro revoca el anterior para todas las pantallas vinculadas. Los tokens de la sesión administrativa se mantienen en memoria y la autenticación de los informes sigue a cargo de Microsoft.
+
+Si Supabase deja de responder durante la reproducción, la TV conserva la última lista recibida mientras la página siga abierta y reintenta la sincronización. Con ambas variables ausentes, la app funciona en modo local. Si ya vinculaste la pantalla, borrar los datos del navegador requiere vincularla de nuevo.
+
+### Despliegue en Netlify
 
 Conecta el repositorio desde Netlify y despliega la rama del proyecto. El archivo `netlify.toml` indica el comando, el directorio `dist` y la reescritura SPA que permite acceder directamente a `/display`. También puedes compilar localmente y desplegar la carpeta `dist` mediante Netlify CLI desde el proyecto (`netlify deploy --prod --dir=dist`) para aplicar la configuración de rutas. Verifica en Netlify que el dominio use HTTPS.
 

@@ -2,3 +2,5 @@ node_modules/
 dist/
 .netlify/
 .npm-cache/
+.env
+.env.*
