@@ -34,7 +34,7 @@ Abre la URL que imprime Vite. El panel está en `/` y el reproductor en `/displa
 5. Abre el panel publicado, inicia sesión e importa el JSON si ya tenías informes. En **Vincular pantalla**, genera el código. Abre la URL del sitio con `/display` en la LG e introdúcelo una vez.
 6. Modifica la duración de un informe desde el panel y comprueba que la TV reciba la actualización. La consulta se repite cada 15 segundos. Cierra y vuelve a abrir el navegador de la LG para comprobar que conserva la vinculación.
 
-El código tiene seis dígitos, dura cinco minutos y se invalida después de usarlo o tras cinco intentos incorrectos. La LG guarda una credencial de solo lectura hasta un año en una cookie HTTPS limitada a `/display`. Vincular otra pantalla reemplaza la vinculación anterior. Los tokens de la sesión administrativa se mantienen en memoria y la autenticación de los informes sigue a cargo de Microsoft.
+El código tiene seis dígitos, dura cinco minutos y se invalida después de usarlo o tras cinco intentos incorrectos. Genera un código nuevo por cada TV y vincúlalas de una en una. Cada TV guarda su propia credencial de solo lectura hasta un año en una cookie HTTPS limitada a `/display`. Las pantallas vinculadas reproducen la misma lista y conservan su acceso al agregar otra. Los tokens de la sesión administrativa se mantienen en memoria y la autenticación de los informes sigue a cargo de Microsoft.
 
 Si Supabase deja de responder durante la reproducción, la TV conserva la última lista recibida mientras la página siga abierta y reintenta la sincronización. Con ambas variables ausentes, la app funciona en modo local. Si ya vinculaste la pantalla, borrar los datos del navegador requiere vincularla de nuevo.
 
