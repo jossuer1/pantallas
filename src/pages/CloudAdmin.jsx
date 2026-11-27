@@ -35,16 +35,20 @@ export default function CloudAdmin() {
     revision.current = await rpc('save', {data: JSON.parse(serialize(value)), expected_revision: revision.current}, await token())
   }
   async function pair() {
-    if (!window.confirm('¿Generar un código nuevo? Las pantallas vinculadas deberán ingresar el nuevo código.')) return
     setConnecting(true)
+    setCode('')
     setMessage('')
-    try { setCode(await rpc('pair', {}, await token())) }
+    try {
+      const pin = await rpc('pair', {}, await token())
+      if (!/^[0-9]{6}$/.test(pin)) throw new Error('Aplica pairing-six-digits.sql en Supabase para activar los códigos de seis dígitos.')
+      setCode(pin)
+    }
     catch (error) { setMessage(error.message) }
     finally { setConnecting(false) }
   }
   return reports ? <Admin cloud={{reports, save}} extra={<section className="card transfer">
     <h2>Vincular pantalla</h2>
-    <p className="muted">Abre /display en la LG e introduce el código de solo lectura.</p>
+    <p className="muted">Abre /display en la LG e introduce el código de seis dígitos. Vence en cinco minutos.</p>
     <button disabled={connecting} onClick={pair}>Generar código</button>
     {code && <label>Código de pantalla<input readOnly value={code} onFocus={event => event.target.select()}/></label>}
     {message && <p role="alert">{message}</p>}

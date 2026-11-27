@@ -1,4 +1,5 @@
--- Run in the Supabase SQL Editor, then grant an existing Auth user access below.
+-- Run in the Supabase SQL Editor, then run pairing-six-digits.sql.
+-- Grant an existing Auth user access using the query below.
 create schema if not exists happy_pay_private;
 revoke all on schema happy_pay_private from public;
 create table if not exists happy_pay_private.admins (

@@ -28,13 +28,13 @@ Abre la URL que imprime Vite. El panel está en `/` y el reproductor en `/displa
 ### Sincronización con Supabase en Render
 
 1. Si ya tienes una lista local, expórtala desde el panel antes de habilitar Supabase.
-2. Crea un proyecto en Supabase. Abre **SQL Editor** y ejecuta el contenido de `supabase/setup.sql`.
+2. Crea un proyecto en Supabase. Abre **SQL Editor** y ejecuta `supabase/setup.sql` y luego `supabase/pairing-six-digits.sql`. Si ya tienes una instalación de Happy Pay Display, ejecuta únicamente la segunda consulta para actualizar la vinculación.
 3. En **Authentication → Users**, crea el usuario administrador con correo y contraseña. Ejecuta la última consulta del archivo SQL por separado, sustituyendo `TU_CORREO` por ese correo. Para confirmar que el usuario quedó autorizado, comprueba que la consulta insertó una fila en `happy_pay_private.admins`.
 4. En **Environment** del sitio estático de Render, agrega `VITE_SUPABASE_URL` con la URL HTTPS del proyecto y `VITE_SUPABASE_PUBLISHABLE_KEY` con la clave **Publishable**. Vite incluye estas dos variables en la compilación del navegador. Usa exclusivamente el tipo de clave Publishable. Guarda y vuelve a compilar y desplegar el sitio. Mantén la regla **Rewrite** de `/*` a `/index.html`.
 5. Abre el panel publicado, inicia sesión e importa el JSON si ya tenías informes. En **Vincular pantalla**, genera el código. Abre la URL del sitio con `/display` en la LG e introdúcelo una vez.
 6. Modifica la duración de un informe desde el panel y comprueba que la TV reciba la actualización. La consulta se repite cada 15 segundos. Cierra y vuelve a abrir el navegador de la LG para comprobar que conserva la vinculación.
 
-El código de pantalla permite leer la lista compartida y se conserva hasta un año en una cookie HTTPS de la LG limitada a `/display`. Guárdalo como dato privado. Generar otro revoca el anterior para todas las pantallas vinculadas. Los tokens de la sesión administrativa se mantienen en memoria y la autenticación de los informes sigue a cargo de Microsoft.
+El código tiene seis dígitos, dura cinco minutos y se invalida después de usarlo o tras cinco intentos incorrectos. La LG guarda una credencial de solo lectura hasta un año en una cookie HTTPS limitada a `/display`. Vincular otra pantalla reemplaza la vinculación anterior. Los tokens de la sesión administrativa se mantienen en memoria y la autenticación de los informes sigue a cargo de Microsoft.
 
 Si Supabase deja de responder durante la reproducción, la TV conserva la última lista recibida mientras la página siga abierta y reintenta la sincronización. Con ambas variables ausentes, la app funciona en modo local. Si ya vinculaste la pantalla, borrar los datos del navegador requiere vincularla de nuevo.
 

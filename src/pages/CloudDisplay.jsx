@@ -19,6 +19,7 @@ export default function CloudDisplay() {
   const [code, setCode] = useState(readCode)
   const [config, setConfig] = useState(null)
   const [message, setMessage] = useState('')
+  const [pairing, setPairing] = useState(false)
   useEffect(() => {
     if (!code) return
     let stopped = false
@@ -50,24 +51,33 @@ export default function CloudDisplay() {
     return () => { stopped = true; clearTimeout(timer) }
   }, [code])
 
-  function pair(event) {
+  async function pair(event) {
     event.preventDefault()
-    const value = event.currentTarget.elements.code.value.trim().toLowerCase()
-    if (!/^[0-9a-f]{32}$/.test(value)) {
-      setMessage('Introduce el código de 32 caracteres del panel.')
+    const value = event.currentTarget.elements.code.value.trim()
+    if (!/^[0-9]{6}$/.test(value)) {
+      setMessage('Introduce los seis dígitos del panel.')
       return
     }
-    storeCode(value)
-    setCode(value)
+    setPairing(true)
     setMessage('')
+    try {
+      const deviceCode = await rpc('redeem', {pin: value})
+      if (!deviceCode) {
+        setMessage('Código inválido, vencido o agotado. Revisa los dígitos o genera otro código.')
+        return
+      }
+      storeCode(deviceCode)
+      setCode(deviceCode)
+    } catch (error) { setMessage(error.message) }
+    finally { setPairing(false) }
   }
 
   if (config) return <Display cloudConfig={config} syncMessage={message}/>
   return <main className="display"><div className="tv-message">
     {code ? <p role="status">{message || 'Cargando lista de reproducción…'}</p> : <form className="card editor" onSubmit={pair}>
       <h2>Vincular esta pantalla</h2>
-      <label>Código de pantalla<input name="code" required autoComplete="off" spellCheck={false}/></label>
-      <button className="primary">Vincular</button>
+      <label>Código de seis dígitos<input name="code" required inputMode="numeric" maxLength={6} pattern="[0-9]{6}" autoComplete="off"/></label>
+      <button className="primary" disabled={pairing}>{pairing ? 'Vinculando…' : 'Vincular'}</button>
       {message && <p role="alert">{message}</p>}
     </form>}
   </div></main>
