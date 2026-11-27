@@ -1,0 +1,22 @@
+{
+  "name": "happy-pay-display",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --configLoader native",
+    "build": "vite build --configLoader native",
+    "preview": "vite preview --host 0.0.0.0 --configLoader native",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "vite": "^6.4.0",
+    "@vitejs/plugin-legacy": "^6.1.1",
+    "terser": "^5.39.0"
+  }
+}
